@@ -265,9 +265,9 @@ Agent: There are 2 Motor_UDT tags:
 - [x] Tag→usage index built on first parse for instant queries
 - [x] 79 tests
 
-### v0.4 — Cross-Platform Intelligence
-- [ ] Cross-reference Ignition tags with Studio 5000 L5X PLC logic
-- [ ] "This alarm fires when tag X goes true — here's the PLC logic that drives X"
+### v0.4 — Cross-Platform Intelligence ✅
+- [x] Cross-reference Ignition tags with Studio 5000 L5X PLC logic via [project-automate-bridge](https://github.com/nodeblue-ai/project-automate-bridge)
+- [x] "This alarm fires when tag X goes true — here's the PLC logic that drives X"
 
 ### Future
 - [ ] FBD and SFC detailed parsing

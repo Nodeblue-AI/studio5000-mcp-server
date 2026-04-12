@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.0] - 2026-04-12
+
+### Added
+- **Cross-platform intelligence** — new [project-automate-bridge](https://github.com/nodeblue-ai/project-automate-bridge) package correlates Ignition OPC tags with Studio 5000 L5X PLC logic end-to-end. See the bridge package for `correlate_projects`, `trace_tag`, and `find_unmapped_tags` tools.
+
 ## [0.3.1] - 2026-04-12
 
 ### Fixed

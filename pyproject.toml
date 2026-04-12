@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "studio5000-mcp-server"
-version = "0.3.1"
+version = "0.4.0"
 description = "MCP server for Studio 5000 — parse L5X project exports and give AI agents structured access to PLC tags, UDTs, routines, AOIs, and cross-references"
 readme = "README.md"
 license = "MIT"
