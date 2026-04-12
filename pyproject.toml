@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "studio5000-mcp-server"
+version = "0.1.0"
+description = "MCP server for Studio 5000 — parse L5X project exports and give AI agents structured access to PLC tags, UDTs, routines, AOIs, and cross-references"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Nodeblue", email = "contact@nodeblue.ai" }]
+keywords = ["studio5000", "rockwell", "allen-bradley", "l5x", "plc", "mcp", "industrial-automation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = ["fastmcp==3.2.3"]
+
+[project.urls]
+Homepage = "https://github.com/nodeblue-ai/studio5000-mcp-server"
+Repository = "https://github.com/nodeblue-ai/studio5000-mcp-server"
+Issues = "https://github.com/nodeblue-ai/studio5000-mcp-server/issues"
+Changelog = "https://github.com/nodeblue-ai/studio5000-mcp-server/blob/main/CHANGELOG.md"
+
+[project.scripts]
+studio5000-mcp-server = "studio5000_mcp_server.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/studio5000_mcp_server"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

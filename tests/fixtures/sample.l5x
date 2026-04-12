@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RSLogix5000Content SchemaRevision="1.0" SoftwareRevision="33.00" TargetName="SampleController" TargetType="Controller" ContainsContext="true" Owner="Nodeblue" ExportDate="Sun Apr 12 20:00:00 2026" ExportOptions="References NoRawData L5KData DecoratedData Context Dependencies ForceProtectedEncoding AllProjDocTrans">
+<Controller Use="Target" Name="SampleController" ProcessorType="1769-L33ER" MajorRev="33" MinorRev="1" Description="Sample controller for testing studio5000-mcp-server">
+<RedundancyInfo Enabled="false" />
+<Security Code="0" ChangesToDetect="16#ffff_ffff_ffff_ffff" />
+
+<DataTypes>
+  <DataType Name="Motor_UDT" Family="NoFamily" Class="User" Description="Standard motor interface type">
+    <Members>
+      <Member Name="Running" DataType="BOOL" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write" Description="Motor running feedback" />
+      <Member Name="Faulted" DataType="BOOL" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write" Description="Motor fault status" />
+      <Member Name="Speed" DataType="REAL" Dimension="0" Radix="Float" Hidden="false" ExternalAccess="Read/Write" Description="Motor speed in RPM" />
+      <Member Name="RunCommand" DataType="BOOL" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write" Description="Command to start motor" />
+      <Member Name="RunTime" DataType="DINT" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write" Description="Accumulated run time in seconds" />
+    </Members>
+  </DataType>
+  <DataType Name="Valve_UDT" Family="NoFamily" Class="User" Description="Standard valve interface type">
+    <Members>
+      <Member Name="Open" DataType="BOOL" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write" Description="Valve open feedback" />
+      <Member Name="Closed" DataType="BOOL" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write" Description="Valve closed feedback" />
+      <Member Name="Position" DataType="REAL" Dimension="0" Radix="Float" Hidden="false" ExternalAccess="Read/Write" Description="Valve position 0-100%" />
+      <Member Name="OpenCommand" DataType="BOOL" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write" Description="Command to open valve" />
+      <Member Name="FaultCode" DataType="DINT" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write" Description="Valve fault code" />
+    </Members>
+  </DataType>
+</DataTypes>
+
+<AddOnInstructionDefinitions>
+  <AddOnInstruction Name="Motor_Control" Description="Standard motor start/stop with fault detection" Revision="1.2" RevisionExtension="1" Vendor="Nodeblue" ExecutePrescan="false" ExecutePostscan="false" ExecuteEnableInFalse="false" CreatedDate="2026-01-15T10:00:00.000Z" CreatedBy="engineer" EditedDate="2026-04-01T14:30:00.000Z" EditedBy="engineer">
+    <Parameters>
+      <Parameter Name="EnableIn" TagType="Base" DataType="BOOL" Usage="Input" Radix="Decimal" Required="false" Visible="false" ExternalAccess="Read Only" Description="Enable Input - System Defined Parameter" />
+      <Parameter Name="EnableOut" TagType="Base" DataType="BOOL" Usage="Output" Radix="Decimal" Required="false" Visible="false" ExternalAccess="Read Only" Description="Enable Output - System Defined Parameter" />
+      <Parameter Name="Start" TagType="Base" DataType="BOOL" Usage="Input" Radix="Decimal" Required="true" Visible="true" ExternalAccess="Read/Write" Description="Start command" />
+      <Parameter Name="Stop" TagType="Base" DataType="BOOL" Usage="Input" Radix="Decimal" Required="true" Visible="true" ExternalAccess="Read/Write" Description="Stop command" />
+      <Parameter Name="FaultReset" TagType="Base" DataType="BOOL" Usage="Input" Radix="Decimal" Required="true" Visible="true" ExternalAccess="Read/Write" Description="Fault reset command" />
+      <Parameter Name="MotorFeedback" TagType="Base" DataType="BOOL" Usage="Input" Radix="Decimal" Required="true" Visible="true" ExternalAccess="Read/Write" Description="Motor running feedback from field" />
+      <Parameter Name="RunOutput" TagType="Base" DataType="BOOL" Usage="Output" Radix="Decimal" Required="true" Visible="true" ExternalAccess="Read Only" Description="Motor run output to starter" />
+      <Parameter Name="FaultOutput" TagType="Base" DataType="BOOL" Usage="Output" Radix="Decimal" Required="true" Visible="true" ExternalAccess="Read Only" Description="Motor fault output" />
+      <Parameter Name="Running" TagType="Base" DataType="BOOL" Usage="Output" Radix="Decimal" Required="true" Visible="true" ExternalAccess="Read Only" Description="Motor is running" />
+    </Parameters>
+    <LocalTags>
+      <LocalTag Name="RunLatch" DataType="BOOL" Radix="Decimal" ExternalAccess="None" Description="Internal run latch" />
+      <LocalTag Name="FaultTimer" DataType="TIMER" Radix="NullType" ExternalAccess="None" Description="Feedback fault timer" />
+    </LocalTags>
+    <Routines>
+      <Routine Name="Logic" Type="RLL">
+        <RLLContent>
+          <Rung Number="0" Type="N" Comment="Start/stop latch - start seals in, stop breaks circuit">
+            <Text><![CDATA[[XIC(Start) ,XIC(RunLatch) ][XIO(Stop) XIO(FaultOutput) OTE(RunLatch) ];]]></Text>
+          </Rung>
+          <Rung Number="1" Type="N" Comment="Drive run output from latch">
+            <Text><![CDATA[XIC(RunLatch) OTE(RunOutput) ;]]></Text>
+          </Rung>
+          <Rung Number="2" Type="N" Comment="Feedback fault - if run command is on but no feedback within 5 seconds">
+            <Text><![CDATA[XIC(RunOutput) XIO(MotorFeedback) TON(FaultTimer,5000,0) ;]]></Text>
+          </Rung>
+          <Rung Number="3" Type="N" Comment="Latch fault output on timer done">
+            <Text><![CDATA[[XIC(FaultTimer.DN) ,XIC(FaultOutput) ][XIO(FaultReset) OTE(FaultOutput) ];]]></Text>
+          </Rung>
+          <Rung Number="4" Type="N" Comment="Running status from feedback">
+            <Text><![CDATA[XIC(MotorFeedback) OTE(Running) ;]]></Text>
+          </Rung>
+        </RLLContent>
+      </Routine>
+    </Routines>
+  </AddOnInstruction>
+</AddOnInstructionDefinitions>
+
+<Tags>
+  <Tag Name="SystemClock" TagType="Base" DataType="DINT" Radix="Decimal" Constant="false" ExternalAccess="Read/Write" Description="System clock counter">
+    <Data Format="L5K"><![CDATA[0]]></Data>
+  </Tag>
+  <Tag Name="Motor_1" TagType="Base" DataType="Motor_UDT" Constant="false" ExternalAccess="Read/Write" Description="Conveyor 1 drive motor">
+    <Data Format="L5K"><![CDATA[[0,0,0.0,0,0]]]></Data>
+  </Tag>
+  <Tag Name="Motor_2" TagType="Base" DataType="Motor_UDT" Constant="false" ExternalAccess="Read/Write" Description="Conveyor 2 drive motor">
+    <Data Format="L5K"><![CDATA[[0,0,0.0,0,0]]]></Data>
+  </Tag>
+  <Tag Name="EmergencyStop" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write" Description="Plant emergency stop - NC contact">
+    <Data Format="L5K"><![CDATA[0]]></Data>
+  </Tag>
+  <Tag Name="Inlet_Valve" TagType="Base" DataType="Valve_UDT" Constant="false" ExternalAccess="Read/Write" Description="Main inlet valve">
+    <Data Format="L5K"><![CDATA[[0,0,0.0,0,0]]]></Data>
+  </Tag>
+  <Tag Name="FaultCount" TagType="Base" DataType="DINT" Radix="Decimal" Constant="false" ExternalAccess="Read/Write" Description="Total fault count since last reset">
+    <Data Format="L5K"><![CDATA[0]]></Data>
+  </Tag>
+  <Tag Name="LineSpeed" TagType="Base" DataType="REAL" Radix="Float" Constant="false" ExternalAccess="Read/Write" Description="Production line speed setpoint">
+    <Data Format="L5K"><![CDATA[0.0]]></Data>
+  </Tag>
+</Tags>
+
+<Programs>
+  <Program Name="MainProgram" MainRoutineName="MainRoutine" Description="Main control program">
+    <Tags>
+      <Tag Name="MainTimer" TagType="Base" DataType="TIMER" Radix="NullType" Constant="false" ExternalAccess="Read/Write" Description="Main cycle timer" />
+      <Tag Name="StartPB" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write" Description="Start pushbutton input" />
+      <Tag Name="StopPB" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write" Description="Stop pushbutton input" />
+      <Tag Name="SystemRunning" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write" Description="System is running" />
+      <Tag Name="FaultActive" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write" Description="Any fault is active" />
+      <Tag Name="CycleCounter" TagType="Base" DataType="COUNTER" Radix="NullType" Constant="false" ExternalAccess="Read/Write" Description="Production cycle counter" />
+      <Tag Name="Motor1_AOI" TagType="Base" DataType="Motor_Control" Radix="NullType" Constant="false" ExternalAccess="Read/Write" Description="Motor 1 AOI instance" />
+    </Tags>
+    <Routines>
+      <Routine Name="MainRoutine" Type="RLL" Description="Main control logic">
+        <RLLContent>
+          <Rung Number="0" Type="N" Comment="System start/stop - start seals in through SystemRunning, stop or E-stop breaks circuit">
+            <Text><![CDATA[[XIC(StartPB) ,XIC(SystemRunning) ][XIO(StopPB) XIO(EmergencyStop) XIO(FaultActive) OTE(SystemRunning) ];]]></Text>
+          </Rung>
+          <Rung Number="1" Type="N" Comment="Motor 1 control via AOI - start when system running, stop on system stop">
+            <Text><![CDATA[Motor_Control(Motor1_AOI,SystemRunning,StopPB,0,Motor_1.Running,Motor_1.RunCommand,Motor_1.Faulted,Motor1_AOI.Running) ;]]></Text>
+          </Rung>
+          <Rung Number="2" Type="N" Comment="Fault detection - any motor fault sets FaultActive">
+            <Text><![CDATA[[XIC(Motor_1.Faulted) ,XIC(Motor_2.Faulted) ]OTE(FaultActive) ;]]></Text>
+          </Rung>
+          <Rung Number="3" Type="N" Comment="Increment fault counter on rising edge of FaultActive">
+            <Text><![CDATA[XIC(FaultActive) CTU(CycleCounter,1,100) ;]]></Text>
+          </Rung>
+          <Rung Number="4" Type="N" Comment="Main cycle timer - 1 second heartbeat">
+            <Text><![CDATA[XIC(SystemRunning) TON(MainTimer,1000,0) ;]]></Text>
+          </Rung>
+          <Rung Number="5" Type="N" Comment="Reset cycle timer on done">
+            <Text><![CDATA[XIC(MainTimer.DN) OTU(MainTimer.TT) ;]]></Text>
+          </Rung>
+          <Rung Number="6" Type="N" Comment="Set line speed when system running">
+            <Text><![CDATA[XIC(SystemRunning) MOV(60.0,LineSpeed) ;]]></Text>
+          </Rung>
+        </RLLContent>
+      </Routine>
+      <Routine Name="FaultHandler" Type="ST" Description="Fault handling logic in structured text">
+        <STContent>
+          <Line Number="0"><![CDATA[// Fault Handler - checks all motor faults and logs]]></Line>
+          <Line Number="1"><![CDATA[IF Motor_1.Faulted THEN]]></Line>
+          <Line Number="2"><![CDATA[    FaultCount := FaultCount + 1;]]></Line>
+          <Line Number="3"><![CDATA[    Motor_1.RunCommand := 0;]]></Line>
+          <Line Number="4"><![CDATA[END_IF;]]></Line>
+          <Line Number="5"><![CDATA[]]></Line>
+          <Line Number="6"><![CDATA[IF Motor_2.Faulted THEN]]></Line>
+          <Line Number="7"><![CDATA[    FaultCount := FaultCount + 1;]]></Line>
+          <Line Number="8"><![CDATA[    Motor_2.RunCommand := 0;]]></Line>
+          <Line Number="9"><![CDATA[END_IF;]]></Line>
+          <Line Number="10"><![CDATA[]]></Line>
+          <Line Number="11"><![CDATA[// Clear fault count on reset]]></Line>
+          <Line Number="12"><![CDATA[IF EmergencyStop THEN]]></Line>
+          <Line Number="13"><![CDATA[    FaultCount := 0;]]></Line>
+          <Line Number="14"><![CDATA[END_IF;]]></Line>
+        </STContent>
+      </Routine>
+    </Routines>
+  </Program>
+  <Program Name="MotorProgram" MainRoutineName="MotorControl" Description="Motor-specific control logic">
+    <Tags>
+      <Tag Name="VFD_SpeedRef" TagType="Base" DataType="REAL" Radix="Float" Constant="false" ExternalAccess="Read/Write" Description="VFD speed reference 0-60Hz" />
+      <Tag Name="VFD_Running" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write" Description="VFD running feedback" />
+      <Tag Name="VFD_Fault" TagType="Base" DataType="BOOL" Radix="Decimal" Constant="false" ExternalAccess="Read/Write" Description="VFD fault status" />
+      <Tag Name="SpeedRampTimer" TagType="Base" DataType="TIMER" Radix="NullType" Constant="false" ExternalAccess="Read/Write" Description="Speed ramp delay timer" />
+    </Tags>
+    <Routines>
+      <Routine Name="MotorControl" Type="RLL" Description="VFD motor control with speed ramping">
+        <RLLContent>
+          <Rung Number="0" Type="N" Comment="Start VFD when Motor_1 run command is active and no VFD fault">
+            <Text><![CDATA[XIC(Motor_1.RunCommand) XIO(VFD_Fault) OTE(VFD_Running) ;]]></Text>
+          </Rung>
+          <Rung Number="1" Type="N" Comment="Speed ramp timer - wait 2 seconds before applying full speed">
+            <Text><![CDATA[XIC(VFD_Running) TON(SpeedRampTimer,2000,0) ;]]></Text>
+          </Rung>
+          <Rung Number="2" Type="N" Comment="Set speed reference based on ramp timer">
+            <Text><![CDATA[XIC(SpeedRampTimer.DN) MOV(LineSpeed,VFD_SpeedRef) ;]]></Text>
+          </Rung>
+          <Rung Number="3" Type="N" Comment="Clear speed reference when not running">
+            <Text><![CDATA[XIO(VFD_Running) MOV(0.0,VFD_SpeedRef) ;]]></Text>
+          </Rung>
+        </RLLContent>
+      </Routine>
+    </Routines>
+  </Program>
+</Programs>
+
+<Tasks>
+  <Task Name="MainTask" Type="CONTINUOUS" Rate="10" Priority="10" Watchdog="500" DisableUpdateOutputs="false" InhibitTask="false" Description="Main continuous task">
+    <ScheduledPrograms>
+      <ScheduledProgram Name="MainProgram" />
+      <ScheduledProgram Name="MotorProgram" />
+    </ScheduledPrograms>
+  </Task>
+  <Task Name="EventTask" Type="EVENT" Rate="20" Priority="5" Watchdog="500" DisableUpdateOutputs="false" InhibitTask="false" Description="Event-driven task for fast response">
+    <ScheduledPrograms />
+  </Task>
+</Tasks>
+
+<Modules>
+  <Module Name="Local" CatalogNumber="1769-L33ER" Vendor="1" ProductType="14" ProductCode="107" Major="33" Minor="1" ParentModule="Local" ParentModPortId="1" Inhibited="false" MajorFault="true" Description="Local CompactLogix controller">
+    <EKey State="CompatibleModule" />
+  </Module>
+  <Module Name="DI_Module" CatalogNumber="1769-IQ16" Vendor="1" ProductType="7" ProductCode="58" Major="3" Minor="1" ParentModule="Local" ParentModPortId="1" Inhibited="false" MajorFault="false" Description="16-point digital input module - Slot 1">
+    <EKey State="CompatibleModule" />
+    <Ports>
+      <Port Id="1" Address="1" Type="Compact" Upstream="false" />
+    </Ports>
+  </Module>
+  <Module Name="DO_Module" CatalogNumber="1769-OB16" Vendor="1" ProductType="7" ProductCode="59" Major="3" Minor="1" ParentModule="Local" ParentModPortId="1" Inhibited="false" MajorFault="false" Description="16-point digital output module - Slot 2">
+    <EKey State="CompatibleModule" />
+    <Ports>
+      <Port Id="1" Address="2" Type="Compact" Upstream="false" />
+    </Ports>
+  </Module>
+</Modules>
+
+</Controller>
+</RSLogix5000Content>
