@@ -155,6 +155,15 @@ Get routine logic. Ladder routines return compact NeutralText with rung comments
 get_routine("/path/to/project.l5x", "MainProgram", "MainRoutine")
 ```
 
+### `get_aois(l5x_path)`
+List all Add-On Instructions with name, description, and revision.
+
+### `get_aoi(l5x_path, aoi_name)`
+Get an AOI definition with parameters (name, data type, usage), local tags, vendor info, and internal routine logic.
+
+### `list_modules(l5x_path)`
+List all I/O modules with catalog numbers, slot assignments, and descriptions.
+
 Returns:
 ```json
 {
@@ -218,9 +227,10 @@ Agent: There are 2 Motor_UDT tags:
 - [x] Structured error handling on all tools
 - [x] 48 tests
 
-### v0.2 — AOIs & Modules
-- [ ] Add-On Instruction definitions with parameters and internal logic
-- [ ] I/O module tree (catalog numbers, slot assignments)
+### v0.2 — AOIs & Modules ✅
+- [x] Add-On Instruction definitions with parameters, local tags, and internal logic
+- [x] I/O module tree (catalog numbers, slot assignments)
+- [x] 66 tests
 
 ### v0.3 — Cross-Reference Engine
 - [ ] `search_logic(pattern)` — find all routines/rungs referencing a tag, AOI, or pattern
@@ -253,16 +263,18 @@ python -m pytest tests/ -v
 src/studio5000_mcp_server/
 ├── __init__.py
 ├── __main__.py          # CLI entry point (stdio/SSE)
-├── server.py            # FastMCP server with 9 tool definitions
+├── server.py            # FastMCP server with 12 tool definitions
 ├── l5x_parser.py        # Core L5X XML parser (LRU-cached)
 └── parsers/
     ├── tags.py          # Controller + program-scoped tags
     ├── udts.py          # UDT definitions with members
     ├── routines.py      # Ladder NeutralText + ST code
-    └── programs.py      # Program/task structure
+    ├── programs.py      # Program/task structure
+    ├── aois.py          # Add-On Instruction definitions
+    └── modules.py       # I/O module tree
 
 tests/
-├── test_server.py       # 48 tests — parsers, tools, error handling
+├── test_server.py       # 66 tests — parsers, tools, error handling
 └── fixtures/
     └── sample.l5x       # Synthetic L5X with all resource types
 ```

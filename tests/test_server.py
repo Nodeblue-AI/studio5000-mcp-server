@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from studio5000_mcp_server.l5x_parser import L5XProject, load_l5x
-from studio5000_mcp_server.parsers import programs, routines, tags, udts
+from studio5000_mcp_server.parsers import programs, routines, tags, udts, aois, modules
 
 FIXTURE = Path(__file__).parent / "fixtures" / "sample.l5x"
 
@@ -292,6 +292,110 @@ class TestRoutines:
         assert result is None
 
 
+# ── AOIs ────────────────────────────────────────────────────
+
+
+class TestAOIs:
+    @pytest.fixture
+    def proj(self):
+        return load_l5x(str(FIXTURE))
+
+    def test_list_aois(self, proj):
+        result = aois.list_aois(proj)
+        assert len(result) == 1
+        assert result[0]["name"] == "Motor_Control"
+
+    def test_aoi_description(self, proj):
+        result = aois.list_aois(proj)
+        assert "motor" in result[0]["description"].lower()
+
+    def test_aoi_revision(self, proj):
+        result = aois.list_aois(proj)
+        assert result[0]["revision"] == "1.2"
+
+    def test_get_aoi(self, proj):
+        result = aois.get_aoi(proj, "Motor_Control")
+        assert result is not None
+        assert result["name"] == "Motor_Control"
+        assert result["vendor"] == "Nodeblue"
+
+    def test_aoi_parameters(self, proj):
+        result = aois.get_aoi(proj, "Motor_Control")
+        param_names = [p["name"] for p in result["parameters"]]
+        assert "Start" in param_names
+        assert "Stop" in param_names
+        assert "RunOutput" in param_names
+        assert "FaultOutput" in param_names
+        assert "EnableIn" in param_names
+
+    def test_aoi_param_usage(self, proj):
+        result = aois.get_aoi(proj, "Motor_Control")
+        params = {p["name"]: p for p in result["parameters"]}
+        assert params["Start"]["usage"] == "Input"
+        assert params["RunOutput"]["usage"] == "Output"
+
+    def test_aoi_local_tags(self, proj):
+        result = aois.get_aoi(proj, "Motor_Control")
+        lt_names = [lt["name"] for lt in result["localTags"]]
+        assert "RunLatch" in lt_names
+        assert "FaultTimer" in lt_names
+
+    def test_aoi_logic(self, proj):
+        result = aois.get_aoi(proj, "Motor_Control")
+        assert len(result["routines"]) == 1
+        logic = result["routines"][0]
+        assert logic["name"] == "Logic"
+        assert logic["type"] == "RLL"
+        assert len(logic["rungs"]) == 5
+
+    def test_aoi_rung_text(self, proj):
+        result = aois.get_aoi(proj, "Motor_Control")
+        rung0 = result["routines"][0]["rungs"][0]
+        assert "XIC(Start)" in rung0["text"]
+        assert "OTE(RunLatch)" in rung0["text"]
+
+    def test_aoi_not_found(self, proj):
+        result = aois.get_aoi(proj, "Nonexistent_AOI")
+        assert result is None
+
+
+# ── Modules ─────────────────────────────────────────────────
+
+
+class TestModules:
+    @pytest.fixture
+    def proj(self):
+        return load_l5x(str(FIXTURE))
+
+    def test_list_modules(self, proj):
+        result = modules.list_modules(proj)
+        assert len(result) == 3
+
+    def test_module_names(self, proj):
+        result = modules.list_modules(proj)
+        names = [m["name"] for m in result]
+        assert "Local" in names
+        assert "DI_Module" in names
+        assert "DO_Module" in names
+
+    def test_catalog_numbers(self, proj):
+        result = modules.list_modules(proj)
+        cats = {m["name"]: m["catalogNumber"] for m in result}
+        assert cats["Local"] == "1769-L33ER"
+        assert cats["DI_Module"] == "1769-IQ16"
+        assert cats["DO_Module"] == "1769-OB16"
+
+    def test_module_slot(self, proj):
+        result = modules.list_modules(proj)
+        di = next(m for m in result if m["name"] == "DI_Module")
+        assert di["slot"] == "1"
+
+    def test_module_description(self, proj):
+        result = modules.list_modules(proj)
+        di = next(m for m in result if m["name"] == "DI_Module")
+        assert "digital input" in di["description"].lower()
+
+
 # ── Server Error Handling ───────────────────────────────────
 
 
@@ -328,6 +432,8 @@ class TestServerIntegration:
         assert result["processorType"] == "1769-L33ER"
         assert result["tagCount"] > 0
         assert result["udtCount"] == 2
+        assert result["aoiCount"] == 1
+        assert result["moduleCount"] == 3
         assert len(result["programs"]) == 2
 
     def test_get_tags_tool(self):
@@ -347,3 +453,19 @@ class TestServerIntegration:
         result = json.loads(get_routine(str(FIXTURE), "MainProgram", "MainRoutine"))
         assert result["type"] == "RLL"
         assert len(result["rungs"]) == 7
+
+    def test_get_aoi_tool(self):
+        from studio5000_mcp_server.server import get_aoi
+        result = json.loads(get_aoi(str(FIXTURE), "Motor_Control"))
+        assert result["name"] == "Motor_Control"
+        assert len(result["parameters"]) > 0
+
+    def test_get_aoi_not_found_tool(self):
+        from studio5000_mcp_server.server import get_aoi
+        result = json.loads(get_aoi(str(FIXTURE), "Nonexistent"))
+        assert "error" in result
+
+    def test_list_modules_tool(self):
+        from studio5000_mcp_server.server import list_modules
+        result = json.loads(list_modules(str(FIXTURE)))
+        assert len(result) == 3

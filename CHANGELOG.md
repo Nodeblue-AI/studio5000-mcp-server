@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0] - 2026-04-12
+
+### Added
+- **`get_aois(l5x_path)`** — list all Add-On Instructions with name, description, and revision.
+- **`get_aoi(l5x_path, aoi_name)`** — get AOI definition with parameters (name, data type, usage), local tags, vendor, and internal routine logic (NeutralText for ladder).
+- **`list_modules(l5x_path)`** — list all I/O modules with catalog numbers, slot assignments, parent module, and descriptions.
+- `load_project` now includes AOI count, AOI names, and module count in the project summary.
+- 18 new tests: AOI listing, AOI parameters/usage/local tags/logic, module listing/catalog/slots (66 total).
+
 ## [0.1.0] - 2026-04-12
 
 ### Added
