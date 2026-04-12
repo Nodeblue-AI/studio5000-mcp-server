@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from studio5000_mcp_server.l5x_parser import L5XProject
+from studio5000_mcp_server.l5x_parser import L5XProject, get_description
 
 
 def list_udts(project: L5XProject) -> list[str]:
@@ -36,7 +36,7 @@ def get_udt(project: L5XProject, name: str = "") -> list[dict[str, Any]]:
             dim = m.get("Dimension", "0")
             if dim != "0":
                 member["dimension"] = int(dim)
-            desc = m.get("Description", "")
+            desc = get_description(m)
             if desc:
                 member["description"] = desc
             radix = m.get("Radix")
@@ -45,7 +45,7 @@ def get_udt(project: L5XProject, name: str = "") -> list[dict[str, Any]]:
             members.append(member)
         entry: dict[str, Any] = {
             "name": dt_name,
-            "description": dt.get("Description", ""),
+            "description": get_description(dt),
             "members": members,
         }
         results.append(entry)

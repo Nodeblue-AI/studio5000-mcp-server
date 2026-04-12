@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 from xml.etree.ElementTree import Element
 
-from studio5000_mcp_server.l5x_parser import L5XProject
+from studio5000_mcp_server.l5x_parser import L5XProject, get_description
 
 
 def _find_routines(project: L5XProject, program: str = "") -> list[tuple[str, Element]]:
@@ -36,7 +36,7 @@ def list_routines(
             "program": prog_name,
             "name": routine.get("Name", ""),
             "type": rtype,
-            "description": routine.get("Description", ""),
+            "description": get_description(routine),
         }
         if rtype == "RLL":
             entry["rungCount"] = rung_count
@@ -58,7 +58,7 @@ def get_routine(
             "program": prog_name,
             "name": routine_name,
             "type": rtype,
-            "description": routine.get("Description", ""),
+            "description": get_description(routine),
         }
         if rtype == "RLL":
             result["rungs"] = _parse_rll(routine)

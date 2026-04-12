@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.1] - 2026-04-12
+
+### Fixed
+- **Description parsing** — all parsers now handle `<Description>` as both XML attribute and child element (real L5X exports use child elements with CDATA). Added `get_description()` helper used across all parsers.
+- **Cross-reference cache** — moved from `setattr` on dataclass instance to module-level dict keyed by project identity. Cleaner and avoids mutating frozen-ish dataclass.
+- **Input validation** — `load_l5x()` now validates root element is `<RSLogix5000Content>` and raises clear `ValueError` for non-L5X XML files and missing `<Controller>` elements.
+- **Unused imports** — removed dead imports in `aois.py` (`get_routine`, `_find_routines`).
+- **`py.typed` marker** — added for downstream type checking support.
+- 3 new tests: invalid XML, wrong root element, missing Controller (82 total).
+
 ## [0.3.0] - 2026-04-12
 
 ### Added

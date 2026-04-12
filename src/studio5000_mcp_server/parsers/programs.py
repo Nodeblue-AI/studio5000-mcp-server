@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from studio5000_mcp_server.l5x_parser import L5XProject
+from studio5000_mcp_server.l5x_parser import L5XProject, get_description
 
 
 def list_programs(project: L5XProject) -> list[dict[str, Any]]:
@@ -14,7 +14,7 @@ def list_programs(project: L5XProject) -> list[dict[str, Any]]:
         results.append({
             "name": prog.get("Name", ""),
             "mainRoutine": prog.get("MainRoutineName", ""),
-            "description": prog.get("Description", ""),
+            "description": get_description(prog),
         })
     return results
 
@@ -29,7 +29,7 @@ def list_tasks(project: L5XProject) -> list[dict[str, Any]]:
             "type": task.get("Type", ""),
             "rate": task.get("Rate", ""),
             "priority": task.get("Priority", ""),
-            "description": task.get("Description", ""),
+            "description": get_description(task),
             "programs": programs,
         })
     return results

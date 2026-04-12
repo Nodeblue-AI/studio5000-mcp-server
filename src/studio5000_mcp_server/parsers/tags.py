@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 from xml.etree.ElementTree import Element
 
-from studio5000_mcp_server.l5x_parser import L5XProject
+from studio5000_mcp_server.l5x_parser import L5XProject, get_description
 
 
 def _parse_tag(tag_el: Element, scope: str) -> dict[str, Any]:
@@ -15,7 +15,7 @@ def _parse_tag(tag_el: Element, scope: str) -> dict[str, Any]:
         "dataType": tag_el.get("DataType", ""),
         "scope": scope,
     }
-    desc = tag_el.get("Description", "")
+    desc = get_description(tag_el)
     if desc:
         entry["description"] = desc
     radix = tag_el.get("Radix")

@@ -1,4 +1,4 @@
-"""Tests for studio5000-mcp-server v0.1.0."""
+"""Tests for studio5000-mcp-server."""
 
 from __future__ import annotations
 
@@ -52,6 +52,24 @@ class TestL5XParser:
     def test_not_a_file(self, tmp_path):
         with pytest.raises(FileNotFoundError):
             load_l5x(str(tmp_path))
+
+    def test_invalid_xml(self, tmp_path):
+        bad = tmp_path / "bad.l5x"
+        bad.write_text("not xml at all")
+        with pytest.raises(Exception):
+            load_l5x(str(bad))
+
+    def test_wrong_root_element(self, tmp_path):
+        bad = tmp_path / "wrong.l5x"
+        bad.write_text('<?xml version="1.0"?><NotAnL5X />')
+        with pytest.raises(ValueError, match="Not an L5X file"):
+            load_l5x(str(bad))
+
+    def test_no_controller(self, tmp_path):
+        bad = tmp_path / "noctrl.l5x"
+        bad.write_text('<?xml version="1.0"?><RSLogix5000Content />')
+        with pytest.raises(ValueError, match="No <Controller>"):
+            load_l5x(str(bad))
 
 
 # ── Programs & Tasks ────────────────────────────────────────

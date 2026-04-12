@@ -7,6 +7,8 @@ from typing import Any
 
 from studio5000_mcp_server.l5x_parser import L5XProject
 
+_xref_cache: dict[int, dict[str, list[dict[str, Any]]]] = {}
+
 
 def build_xref(project: L5XProject) -> dict[str, list[dict[str, Any]]]:
     """Build a symbol→usage index by scanning all NeutralText and ST code.
@@ -14,8 +16,9 @@ def build_xref(project: L5XProject) -> dict[str, list[dict[str, Any]]]:
     Returns a dict mapping symbol names to lists of references:
         {"Motor_1": [{"program": "MainProgram", "routine": "MainRoutine", "rung": 2, "context": "..."}]}
     """
-    if hasattr(project, "_xref_cache"):
-        return project._xref_cache
+    key = id(project)
+    if key in _xref_cache:
+        return _xref_cache[key]
 
     index: dict[str, list[dict[str, Any]]] = {}
 
@@ -69,7 +72,7 @@ def build_xref(project: L5XProject) -> dict[str, list[dict[str, Any]]]:
                             "rung": rung_num, "context": text,
                         })
 
-    project._xref_cache = index
+    _xref_cache[key] = index
     return index
 
 

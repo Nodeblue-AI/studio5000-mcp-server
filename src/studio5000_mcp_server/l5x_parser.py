@@ -26,6 +26,20 @@ class L5XProject:
         return self.root.get("TargetName", self.name)
 
 
+def get_description(el: ET.Element) -> str:
+    """Get description from an element — handles both attribute and child element forms.
+
+    Real L5X exports use <Description><![CDATA[...]]></Description> child elements.
+    Some simplified exports use Description="..." attributes.
+    """
+    desc = el.get("Description", "")
+    if not desc:
+        desc_el = el.find("Description")
+        if desc_el is not None and desc_el.text:
+            desc = desc_el.text.strip()
+    return desc
+
+
 @lru_cache(maxsize=16)
 def load_l5x(path: str) -> L5XProject:
     """Parse an L5X file and return a cached L5XProject.
@@ -41,18 +55,22 @@ def load_l5x(path: str) -> L5XProject:
     tree = ET.parse(str(p))
     root = tree.getroot()
 
+    if root.tag != "RSLogix5000Content":
+        raise ValueError(f"Not an L5X file (root element is <{root.tag}>, expected <RSLogix5000Content>): {path}")
+
     ctrl = root.find("Controller")
     if ctrl is None:
         raise ValueError(f"No <Controller> element found in {path}")
 
-    desc_el = ctrl.get("Description", "")
+    # Description can be an attribute or a child element
+    desc = get_description(ctrl)
 
     return L5XProject(
         root=root,
         controller=ctrl,
         name=ctrl.get("Name", ""),
         processor_type=ctrl.get("ProcessorType", ""),
-        description=desc_el,
+        description=desc,
         major_rev=ctrl.get("MajorRev", ""),
         minor_rev=ctrl.get("MinorRev", ""),
     )

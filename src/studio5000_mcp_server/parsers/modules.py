@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from studio5000_mcp_server.l5x_parser import L5XProject
+from studio5000_mcp_server.l5x_parser import L5XProject, get_description
 
 
 def list_modules(project: L5XProject) -> list[dict[str, Any]]:
@@ -16,7 +16,7 @@ def list_modules(project: L5XProject) -> list[dict[str, Any]]:
             "catalogNumber": mod.get("CatalogNumber", ""),
             "parentModule": mod.get("ParentModule", ""),
         }
-        desc = mod.get("Description", "")
+        desc = get_description(mod)
         if desc:
             entry["description"] = desc
         # Get slot from Ports/Port Address

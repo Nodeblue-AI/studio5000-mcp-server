@@ -174,6 +174,26 @@ search_logic("/path/to/project.l5x", "Motor_\\d")
 
 Returns:
 ```json
+[
+  {
+    "symbol": "Motor_1",
+    "program": "MainProgram",
+    "routine": "MainRoutine",
+    "rung": 1,
+    "context": "Motor_Control(Motor1_AOI,SystemRunning,...)"
+  },
+  {
+    "symbol": "Motor_1.Faulted",
+    "program": "MainProgram",
+    "routine": "FaultHandler",
+    "line": 1,
+    "context": "IF Motor_1.Faulted THEN"
+  }
+]
+```
+
+### `get_routine` response example
+```json
 {
   "program": "MainProgram",
   "name": "MainRoutine",
@@ -284,7 +304,7 @@ src/studio5000_mcp_server/
     └── xref.py          # Cross-reference index (tag→usage)
 
 tests/
-├── test_server.py       # 79 tests — parsers, tools, error handling
+├── test_server.py       # 82 tests — parsers, tools, error handling
 └── fixtures/
     └── sample.l5x       # Synthetic L5X with all resource types
 ```
