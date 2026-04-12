@@ -266,7 +266,7 @@ Agent: There are 2 Motor_UDT tags:
 - [x] 79 tests
 
 ### v0.4 — Cross-Platform Intelligence ✅
-- [x] Cross-reference Ignition tags with Studio 5000 L5X PLC logic via [project-automate-bridge](https://github.com/nodeblue-ai/project-automate-bridge)
+- [x] Cross-reference Ignition tags with Studio 5000 L5X PLC logic via [bridge-mcp-server](https://github.com/nodeblue-ai/bridge-mcp-server)
 - [x] "This alarm fires when tag X goes true — here's the PLC logic that drives X"
 
 ### Future
