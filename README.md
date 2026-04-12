@@ -164,6 +164,14 @@ Get an AOI definition with parameters (name, data type, usage), local tags, vend
 ### `list_modules(l5x_path)`
 List all I/O modules with catalog numbers, slot assignments, and descriptions.
 
+### `search_logic(l5x_path, pattern)`
+Search for a tag, AOI, or regex pattern across all routines and AOIs. Returns every rung/line that references matching symbols with full context.
+
+```
+search_logic("/path/to/project.l5x", "Motor_1")
+search_logic("/path/to/project.l5x", "Motor_\\d")
+```
+
 Returns:
 ```json
 {
@@ -232,9 +240,10 @@ Agent: There are 2 Motor_UDT tags:
 - [x] I/O module tree (catalog numbers, slot assignments)
 - [x] 66 tests
 
-### v0.3 — Cross-Reference Engine
-- [ ] `search_logic(pattern)` — find all routines/rungs referencing a tag, AOI, or pattern
-- [ ] Tag→usage index built on first parse for instant queries
+### v0.3 — Cross-Reference Engine ✅
+- [x] `search_logic(pattern)` — find all routines/rungs referencing a tag, AOI, or pattern
+- [x] Tag→usage index built on first parse for instant queries
+- [x] 79 tests
 
 ### v0.4 — Cross-Platform Intelligence
 - [ ] Cross-reference Ignition tags with Studio 5000 L5X PLC logic
@@ -263,7 +272,7 @@ python -m pytest tests/ -v
 src/studio5000_mcp_server/
 ├── __init__.py
 ├── __main__.py          # CLI entry point (stdio/SSE)
-├── server.py            # FastMCP server with 12 tool definitions
+├── server.py            # FastMCP server with 13 tool definitions
 ├── l5x_parser.py        # Core L5X XML parser (LRU-cached)
 └── parsers/
     ├── tags.py          # Controller + program-scoped tags
@@ -271,10 +280,11 @@ src/studio5000_mcp_server/
     ├── routines.py      # Ladder NeutralText + ST code
     ├── programs.py      # Program/task structure
     ├── aois.py          # Add-On Instruction definitions
-    └── modules.py       # I/O module tree
+    ├── modules.py       # I/O module tree
+    └── xref.py          # Cross-reference index (tag→usage)
 
 tests/
-├── test_server.py       # 66 tests — parsers, tools, error handling
+├── test_server.py       # 79 tests — parsers, tools, error handling
 └── fixtures/
     └── sample.l5x       # Synthetic L5X with all resource types
 ```

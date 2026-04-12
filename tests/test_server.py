@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from studio5000_mcp_server.l5x_parser import L5XProject, load_l5x
-from studio5000_mcp_server.parsers import programs, routines, tags, udts, aois, modules
+from studio5000_mcp_server.parsers import programs, routines, tags, udts, aois, modules, xref
 
 FIXTURE = Path(__file__).parent / "fixtures" / "sample.l5x"
 
@@ -396,6 +396,73 @@ class TestModules:
         assert "digital input" in di["description"].lower()
 
 
+# ── Cross-Reference ─────────────────────────────────────────
+
+
+class TestXRef:
+    @pytest.fixture
+    def proj(self):
+        return load_l5x(str(FIXTURE))
+
+    def test_build_xref(self, proj):
+        index = xref.build_xref(proj)
+        assert isinstance(index, dict)
+        assert len(index) > 0
+
+    def test_motor_1_referenced(self, proj):
+        result = xref.search_xref(proj, "^Motor_1$")
+        assert len(result) > 0
+        programs_found = {r.get("program") for r in result if "program" in r}
+        assert "MainProgram" in programs_found
+
+    def test_motor_1_dotted(self, proj):
+        result = xref.search_xref(proj, "Motor_1\\.Faulted")
+        assert len(result) > 0
+
+    def test_search_across_programs(self, proj):
+        # Motor_1.RunCommand is used in both MainProgram (ST) and MotorProgram (ladder)
+        result = xref.search_xref(proj, "Motor_1\\.RunCommand")
+        programs_found = {r.get("program") for r in result if "program" in r}
+        assert len(programs_found) >= 2
+
+    def test_search_aoi_name(self, proj):
+        result = xref.search_xref(proj, "Motor_Control")
+        assert len(result) > 0
+
+    def test_search_in_aoi_logic(self, proj):
+        # RunLatch is used inside the Motor_Control AOI
+        result = xref.search_xref(proj, "RunLatch")
+        aoi_refs = [r for r in result if "aoi" in r]
+        assert len(aoi_refs) > 0
+        assert aoi_refs[0]["aoi"] == "Motor_Control"
+
+    def test_search_st_code(self, proj):
+        # FaultCount is used in the FaultHandler ST routine
+        result = xref.search_xref(proj, "FaultCount")
+        st_refs = [r for r in result if r.get("routine") == "FaultHandler"]
+        assert len(st_refs) > 0
+        assert "line" in st_refs[0]
+
+    def test_search_regex(self, proj):
+        # Match any Motor_ tag
+        result = xref.search_xref(proj, "Motor_\\d")
+        assert len(result) > 0
+
+    def test_search_not_found(self, proj):
+        result = xref.search_xref(proj, "^CompletelyNonexistentSymbol$")
+        assert result == []
+
+    def test_xref_cached(self, proj):
+        idx1 = xref.build_xref(proj)
+        idx2 = xref.build_xref(proj)
+        assert idx1 is idx2
+
+    def test_context_included(self, proj):
+        result = xref.search_xref(proj, "EmergencyStop")
+        assert len(result) > 0
+        assert all("context" in r for r in result)
+
+
 # ── Server Error Handling ───────────────────────────────────
 
 
@@ -469,3 +536,13 @@ class TestServerIntegration:
         from studio5000_mcp_server.server import list_modules
         result = json.loads(list_modules(str(FIXTURE)))
         assert len(result) == 3
+
+    def test_search_logic_tool(self):
+        from studio5000_mcp_server.server import search_logic
+        result = json.loads(search_logic(str(FIXTURE), "Motor_1"))
+        assert len(result) > 0
+
+    def test_search_logic_empty(self):
+        from studio5000_mcp_server.server import search_logic
+        result = json.loads(search_logic(str(FIXTURE), "^ZZZ_NONEXISTENT$"))
+        assert result == []

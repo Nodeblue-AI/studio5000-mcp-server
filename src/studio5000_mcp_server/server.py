@@ -7,7 +7,7 @@ import json
 from fastmcp import FastMCP
 
 from studio5000_mcp_server.l5x_parser import load_l5x
-from studio5000_mcp_server.parsers import programs, routines, tags, udts, aois, modules
+from studio5000_mcp_server.parsers import programs, routines, tags, udts, aois, modules, xref
 
 
 def _error(msg: str) -> str:
@@ -232,3 +232,25 @@ def list_modules(l5x_path: str) -> str:
         return _error(str(e))
     except Exception as e:
         return _error(f"Failed to list modules: {e}")
+
+
+@mcp.tool
+def search_logic(l5x_path: str, pattern: str) -> str:
+    """Search for a tag, AOI, or pattern across all routines in an L5X project.
+
+    Returns every routine/rung/line that references the matching symbol(s).
+    Supports regex patterns. Use this to answer "Where is this tag used?" or
+    "Which routines reference this AOI?"
+
+    Args:
+        l5x_path: Path to a .l5x file.
+        pattern: Tag name, AOI name, or regex pattern to search for.
+    """
+    try:
+        proj = load_l5x(l5x_path)
+        result = xref.search_xref(proj, pattern)
+        return json.dumps(result, indent=2)
+    except FileNotFoundError as e:
+        return _error(str(e))
+    except Exception as e:
+        return _error(f"Failed to search logic: {e}")

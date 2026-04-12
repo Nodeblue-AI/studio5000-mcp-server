@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0] - 2026-04-12
+
+### Added
+- **`search_logic(l5x_path, pattern)`** — cross-reference engine. Search for any tag, AOI, or regex pattern across all routines and AOIs. Returns every rung/line that references the matching symbol(s) with full context.
+- **Cross-reference index** — built once on first parse, cached on the project instance. Scans all NeutralText (ladder) and Structured Text code across programs and AOI definitions. Indexes both dotted references (`Motor_1.Faulted`) and base tags (`Motor_1`).
+- 13 new tests: cross-program search, AOI internal search, ST code search, regex patterns, caching, context inclusion (79 total).
+
 ## [0.2.0] - 2026-04-12
 
 ### Added
