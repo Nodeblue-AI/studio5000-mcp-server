@@ -44,11 +44,7 @@ Part of [Project Automate](https://github.com/nodeblue-ai/project-automate) by [
 
 ## Installation
 
-```bash
-pip install studio5000-mcp-server
-```
-
-Or install from source:
+Install from source:
 
 ```bash
 git clone https://github.com/nodeblue-ai/studio5000-mcp-server.git
@@ -57,6 +53,8 @@ pip install .
 ```
 
 Requires Python 3.10+.
+
+> **Note:** `pip install studio5000-mcp-server` from PyPI is coming soon. For now, install from source.
 
 ---
 
@@ -292,7 +290,7 @@ python -m pytest tests/ -v
 src/studio5000_mcp_server/
 ├── __init__.py
 ├── __main__.py          # CLI entry point (stdio/SSE)
-├── server.py            # FastMCP server with 13 tool definitions
+├── server.py            # FastMCP server with 12 tool definitions
 ├── l5x_parser.py        # Core L5X XML parser (LRU-cached)
 └── parsers/
     ├── tags.py          # Controller + program-scoped tags
