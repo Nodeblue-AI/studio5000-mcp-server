@@ -1,6 +1,6 @@
 # studio5000-mcp-server
 
-> MCP server for Rockwell/Allen-Bradley Studio 5000 — parse L5X project exports and give AI agents structured access to PLC tags, UDTs, routines, and programs.
+> MCP server for Rockwell/Allen-Bradley Studio 5000 — parse L5X project exports and optional Rockwell `l5xplode` exploded project folders, giving AI agents structured access to PLC tags, UDTs, routines, and programs.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -31,6 +31,7 @@ XIC(StartPB) XIO(StopPB) XIO(EmergencyStop) OTE(SystemRunning) ;
 This keeps context windows small and gives LLMs something they can actually reason about.
 
 Works with **L5X exports** from Studio 5000 Logix Designer v20+ and RSLogix 5000 v17+.
+With optional Rockwell Automation VCS custom tools, it can also explode/implode L5X files and load exploded `RSLogix5000Content` folders.
 
 ## Why This Exists
 
@@ -55,6 +56,24 @@ pip install .
 Requires Python 3.10+.
 
 > **Note:** `pip install studio5000-mcp-server` from PyPI is coming soon. For now, install from source.
+
+### Optional Rockwell VCS custom tools
+
+The server works without external Rockwell tools for normal `.L5X` parsing. To enable exploded-folder and ACD conversion workflows, build or install [RockwellAutomation/ra-logix-designer-vcs-custom-tools](https://github.com/RockwellAutomation/ra-logix-designer-vcs-custom-tools) and configure:
+
+```powershell
+$env:L5XPLODE_EXE = 'C:\path\to\l5xplode.exe'
+$env:L5XGIT_EXE = 'C:\path\to\l5xgit.exe'
+```
+
+Or add those executables to `PATH`.
+
+Capabilities:
+
+- `l5xplode` enables `explode_project`, `implode_project`, and loading exploded `RSLogix5000Content` directories.
+- `l5xgit` enables ACD↔L5X conversion.
+
+ACD conversion has additional prerequisites: Windows, Studio 5000 Logix Designer, Logix Designer SDK, and .NET 10. These are optional and are not required for normal `.L5X` analysis.
 
 ---
 
@@ -124,7 +143,21 @@ Connect from any MCP client using the SSE URL: `http://<host>:8080/sse`
 Health check. Returns `"pong"`.
 
 ### `load_project(l5x_path)`
-Parse an L5X file and return a project summary — controller name, processor type, firmware version, programs, tasks, UDT count, tag count.
+Parse an L5X file or exploded `RSLogix5000Content` directory and return a project summary — controller name, processor type, firmware version, programs, tasks, UDT count, tag count.
+
+> Existing tool argument names remain `l5x_path` for backwards compatibility, but parser tools accept either a `.L5X` file path or an exploded project directory.
+
+### `explode_project(l5x_path, output_dir, force?, pretty_attributes?, unsafe_skip_dependency_check?)`
+Expand an L5X file into Rockwell's multi-file XML representation using optional `l5xplode`.
+
+### `implode_project(exploded_dir, l5x_path, force?)`
+Reconstitute an L5X file from an exploded project directory using optional `l5xplode`.
+
+### `acd_to_l5x(acd_path, l5x_path)`
+Convert an ACD file to L5X using optional `l5xgit`. Requires Windows, Studio 5000 Logix Designer, Logix Designer SDK, and .NET 10.
+
+### `l5x_to_acd(l5x_path, acd_path)`
+Convert an L5X file to ACD using optional `l5xgit`. Requires Windows, Studio 5000 Logix Designer, Logix Designer SDK, and .NET 10.
 
 ### `get_tags(l5x_path, scope?, data_type?)`
 List tags from the project. Filter by scope (`"controller"` or a program name) and/or data type (`"BOOL"`, `"DINT"`, `"Motor_UDT"`, etc.).

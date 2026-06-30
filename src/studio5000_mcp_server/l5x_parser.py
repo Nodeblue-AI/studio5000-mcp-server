@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
+import tempfile
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+
+from studio5000_mcp_server.l5xplode_tools import implode_l5x
+from studio5000_mcp_server.project_source import ProjectSourceType, detect_project_source
 
 
 @dataclass
@@ -74,3 +79,55 @@ def load_l5x(path: str) -> L5XProject:
         major_rev=ctrl.get("MajorRev", ""),
         minor_rev=ctrl.get("MinorRev", ""),
     )
+
+
+def _exploded_tree_signature(root: Path) -> str:
+    """Build a cache signature for an exploded project tree."""
+    newest_mtime = 0
+    file_count = 0
+    for child in root.rglob("*"):
+        if child.is_file():
+            file_count += 1
+            newest_mtime = max(newest_mtime, child.stat().st_mtime_ns)
+    payload = f"{root}|{file_count}|{newest_mtime}"
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def _imploded_cache_path(root: Path) -> Path:
+    cache_dir = Path(tempfile.gettempdir()) / "studio5000_mcp_server" / "imploded"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return cache_dir / f"{root.name}-{_exploded_tree_signature(root)}.L5X"
+
+
+def _l5xplode_project_dir(root: Path) -> Path:
+    """Return the directory shape expected by `l5xplode implode`.
+
+    The MCP API accepts either the RSLogix5000Content folder itself or its parent,
+    but l5xplode's --dir option expects the parent directory containing
+    RSLogix5000Content.
+    """
+    if root.name == "RSLogix5000Content" and (root / "RSLogix5000Content.xml").exists():
+        return root.parent
+    return root
+
+
+@lru_cache(maxsize=16)
+def load_project_source(path: str) -> L5XProject:
+    """Load a Studio 5000 project source from a .L5X file or exploded directory.
+
+    Exploded project directories are normalized by invoking l5xplode implode into a
+    temporary cached .L5X file, then parsed through the existing L5X parser.
+    """
+    source_type, source_path = detect_project_source(path)
+
+    if source_type == ProjectSourceType.L5X:
+        return load_l5x(str(source_path))
+
+    cache_path = _imploded_cache_path(source_path)
+    if not cache_path.exists():
+        result = implode_l5x(str(_l5xplode_project_dir(source_path)), str(cache_path), force=True)
+        if not result.get("success"):
+            detail = result.get("stderr") or result.get("error") or result
+            raise RuntimeError(f"l5xplode implode failed: {detail}")
+
+    return load_l5x(str(cache_path))
