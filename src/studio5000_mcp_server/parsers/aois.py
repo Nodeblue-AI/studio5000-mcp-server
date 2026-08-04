@@ -11,7 +11,7 @@ from studio5000_mcp_server.parsers.routines import _parse_rll, _parse_st
 def list_aois(project: L5XProject) -> list[dict[str, Any]]:
     """List all Add-On Instructions with name, description, and revision."""
     results = []
-    for aoi in project.controller.findall("AddOnInstructionDefinitions/AddOnInstruction"):
+    for aoi in project.controller.findall("AddOnInstructionDefinitions/AddOnInstructionDefinition"):
         results.append({
             "name": aoi.get("Name", ""),
             "description": get_description(aoi),
@@ -22,7 +22,7 @@ def list_aois(project: L5XProject) -> list[dict[str, Any]]:
 
 def get_aoi(project: L5XProject, name: str) -> dict[str, Any] | None:
     """Get AOI definition with parameters and internal logic."""
-    for aoi in project.controller.findall("AddOnInstructionDefinitions/AddOnInstruction"):
+    for aoi in project.controller.findall("AddOnInstructionDefinitions/AddOnInstructionDefinition"):
         if aoi.get("Name") != name:
             continue
 
