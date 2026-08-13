@@ -57,17 +57,19 @@ Built and maintained by [Nodeblue](https://www.nodeblue.ai). These connectors ar
 
 ## Installation
 
-Install from source:
+```bash
+pip install studio5000-mcp-server
+```
+
+Requires Python 3.10+.
+
+To install from source instead:
 
 ```bash
 git clone https://github.com/nodeblue-ai/studio5000-mcp-server.git
 cd studio5000-mcp-server
 pip install .
 ```
-
-Requires Python 3.10+.
-
-> **Note:** `pip install studio5000-mcp-server` from PyPI is coming soon. For now, install from source.
 
 ---
 
@@ -282,7 +284,7 @@ Agent: There are 2 Motor_UDT tags:
 
 ### Maintenance
 - [ ] FBD and SFC detailed parsing (contributions welcome)
-- [ ] PyPI publication (`pip install studio5000-mcp-server`)
+- [x] PyPI publication (`pip install studio5000-mcp-server`)
 - [ ] New Studio 5000 / L5X schema versions as they come out
 - [ ] Bug fixes and edge cases from real exports — [issues welcome](https://github.com/Nodeblue-AI/studio5000-mcp-server/issues)
 
