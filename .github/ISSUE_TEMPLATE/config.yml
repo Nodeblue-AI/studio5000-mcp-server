@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "Nexus — multi-vendor, live diagnosis, knowledge layer, fleet scale"
+    url: https://www.nodeblue.ai/nexus
+    about: "Need this across vendors, on the running line, over your whole plant, or air-gapped? That's Nexus — talk to us."

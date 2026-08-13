@@ -280,11 +280,34 @@ Agent: There are 2 Motor_UDT tags:
 - [x] Cross-reference Ignition tags with Studio 5000 L5X PLC logic via [bridge-mcp-server](https://github.com/nodeblue-ai/bridge-mcp-server)
 - [x] "This alarm fires when tag X goes true — here's the PLC logic that drives X"
 
-### Future
-- [ ] FBD and SFC detailed parsing
-- [ ] L5X fragment generation (code gen)
-- [ ] Logix Designer SDK integration (live tag read/write, compilation)
-- [ ] Local LLM support for air-gapped deployments
+### Maintenance
+- [ ] FBD and SFC detailed parsing (contributions welcome)
+- [ ] PyPI publication (`pip install studio5000-mcp-server`)
+- [ ] New Studio 5000 / L5X schema versions as they come out
+- [ ] Bug fixes and edge cases from real exports — [issues welcome](https://github.com/Nodeblue-AI/studio5000-mcp-server/issues)
+
+This connector is feature-complete for its scope: **single-export L5X comprehension**. Development beyond that scope happens in Nexus.
+
+---
+
+## This Connector vs. Nexus
+
+The connector is the access layer. [Nexus](https://www.nodeblue.ai/nexus) is the intelligence that sits on top of it — and of every other connector — as one system.
+
+| Capability | This connector | Nexus |
+|---|:---:|:---:|
+| Parse L5X exports (tags, UDTs, routines, AOIs, modules) | ✅ | ✅ |
+| Cross-reference search within one project | ✅ | ✅ |
+| Live controller connection (read tags, program currency checks) | — | ✅ |
+| Cross-vendor: Siemens, CODESYS family (500+ brands), Ignition, OPC UA | — | ✅ |
+| Live fault diagnosis on the running line (root-cause, cited) | — | ✅ |
+| Knowledge layer: your manuals, SFS/DOO docs, fault history — searchable, linked to logic | — | ✅ |
+| Persistent memory of the operation across sessions | — | ✅ |
+| Ladder/ST code generation | — | ✅ |
+| Fleet scale: auto-discovery, whole-plant inventory, monitoring, alarming | — | ✅ |
+| Local LLM / air-gapped deployment | — | ✅ |
+
+If you're evaluating this connector for anything beyond a single L5X export, [talk to us about Nexus](https://www.nodeblue.ai/nexus).
 
 ---
 
