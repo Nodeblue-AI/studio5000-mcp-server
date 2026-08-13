@@ -564,3 +564,76 @@ class TestServerIntegration:
         from studio5000_mcp_server.server import search_logic
         result = json.loads(search_logic(str(FIXTURE), "^ZZZ_NONEXISTENT$"))
         assert result == []
+
+
+
+# ── AOI Schema Regression (PR #2) ───────────────────────────
+
+
+class TestAOISchemaRegression:
+    """Regression tests for the AOI XPath bug fixed in PR #2.
+
+    Real L5X exports nest <AddOnInstructionDefinition> elements inside
+    <AddOnInstructionDefinitions>. The parsers previously queried the
+    nonexistent <AddOnInstruction> tag and silently returned no results.
+    These tests use an inline minimal L5X (independent of the shared
+    fixture) to guard against reintroducing the wrong element name.
+    """
+
+    MINIMAL_L5X = """<?xml version="1.0" encoding="UTF-8"?>
+<RSLogix5000Content SchemaRevision="1.0" TargetName="RegressionController">
+  <Controller Name="RegressionController" ProcessorType="1756-L83E" MajorRev="33" MinorRev="1">
+    <AddOnInstructionDefinitions>
+      <AddOnInstructionDefinition Name="Valve_Control" Revision="2.0" Vendor="Nodeblue">
+        <Description><![CDATA[Valve open/close control]]></Description>
+        <Parameters>
+          <Parameter Name="Open" TagType="Base" DataType="BOOL" Usage="Input" Required="true" Visible="true" />
+          <Parameter Name="Opened" TagType="Base" DataType="BOOL" Usage="Output" Required="true" Visible="true" />
+        </Parameters>
+        <LocalTags>
+          <LocalTag Name="OpenLatch" DataType="BOOL" />
+        </LocalTags>
+        <Routines>
+          <Routine Name="Logic" Type="RLL">
+            <RLLContent>
+              <Rung Number="0" Type="N">
+                <Text><![CDATA[XIC(Open) OTE(OpenLatch) ;]]></Text>
+              </Rung>
+            </RLLContent>
+          </Routine>
+        </Routines>
+      </AddOnInstructionDefinition>
+    </AddOnInstructionDefinitions>
+  </Controller>
+</RSLogix5000Content>
+"""
+
+    @pytest.fixture
+    def proj(self, tmp_path):
+        f = tmp_path / "regression.l5x"
+        f.write_text(self.MINIMAL_L5X, encoding="utf-8")
+        return load_l5x(str(f))
+
+    def test_list_aois_finds_definition_tag(self, proj):
+        result = aois.list_aois(proj)
+        assert len(result) == 1
+        assert result[0]["name"] == "Valve_Control"
+        assert result[0]["revision"] == "2.0"
+        assert "valve" in result[0]["description"].lower()
+
+    def test_get_aoi_finds_definition_tag(self, proj):
+        result = aois.get_aoi(proj, "Valve_Control")
+        assert result is not None
+        assert result["name"] == "Valve_Control"
+        assert result["vendor"] == "Nodeblue"
+        param_names = [p["name"] for p in result["parameters"]]
+        assert param_names == ["Open", "Opened"]
+        assert [lt["name"] for lt in result["localTags"]] == ["OpenLatch"]
+        assert result["routines"][0]["name"] == "Logic"
+
+    def test_xref_scans_aoi_definition_logic(self, proj):
+        # xref.py had the same wrong XPath; ensure AOI routines are indexed
+        result = xref.search_xref(proj, "^OpenLatch$")
+        aoi_refs = [r for r in result if r.get("aoi") == "Valve_Control"]
+        assert len(aoi_refs) == 1
+        assert "XIC(Open)" in aoi_refs[0]["context"]

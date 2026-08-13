@@ -26,7 +26,7 @@
 </DataTypes>
 
 <AddOnInstructionDefinitions>
-  <AddOnInstruction Name="Motor_Control" Description="Standard motor start/stop with fault detection" Revision="1.2" RevisionExtension="1" Vendor="Nodeblue" ExecutePrescan="false" ExecutePostscan="false" ExecuteEnableInFalse="false" CreatedDate="2026-01-15T10:00:00.000Z" CreatedBy="engineer" EditedDate="2026-04-01T14:30:00.000Z" EditedBy="engineer">
+  <AddOnInstructionDefinition Name="Motor_Control" Description="Standard motor start/stop with fault detection" Revision="1.2" RevisionExtension="1" Vendor="Nodeblue" ExecutePrescan="false" ExecutePostscan="false" ExecuteEnableInFalse="false" CreatedDate="2026-01-15T10:00:00.000Z" CreatedBy="engineer" EditedDate="2026-04-01T14:30:00.000Z" EditedBy="engineer">
     <Parameters>
       <Parameter Name="EnableIn" TagType="Base" DataType="BOOL" Usage="Input" Radix="Decimal" Required="false" Visible="false" ExternalAccess="Read Only" Description="Enable Input - System Defined Parameter" />
       <Parameter Name="EnableOut" TagType="Base" DataType="BOOL" Usage="Output" Radix="Decimal" Required="false" Visible="false" ExternalAccess="Read Only" Description="Enable Output - System Defined Parameter" />
@@ -63,7 +63,7 @@
         </RLLContent>
       </Routine>
     </Routines>
-  </AddOnInstruction>
+  </AddOnInstructionDefinition>
 </AddOnInstructionDefinitions>
 
 <Tags>

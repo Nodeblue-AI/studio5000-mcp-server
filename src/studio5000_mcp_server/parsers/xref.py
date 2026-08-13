@@ -54,7 +54,7 @@ def build_xref(project: L5XProject) -> dict[str, list[dict[str, Any]]]:
                         })
 
     # Scan AOI routines
-    for aoi in project.controller.findall("AddOnInstructionDefinitions/AddOnInstruction"):
+    for aoi in project.controller.findall("AddOnInstructionDefinitions/AddOnInstructionDefinition"):
         aoi_name = aoi.get("Name", "")
         for routine in aoi.findall("Routines/Routine"):
             rname = routine.get("Name", "")
