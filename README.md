@@ -6,6 +6,19 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/protocol-MCP-green.svg)](https://modelcontextprotocol.io/)
 
+> [!NOTE]
+> **This connector is early community tooling from [Nodeblue](https://www.nodeblue.ai).** The complete system is [**Nexus**](https://www.nodeblue.ai/nexus), our industrial intelligence platform — these repos are just its connector layers.
+>
+> Nexus reads and reasons over your entire operation: PLC logic, SCADA systems, live controller data, documentation, fault history, and MES/ERP records. It works across vendors — Rockwell, Siemens, Ignition, the CODESYS family, and 500+ more brands through PLCopen. It diagnoses faults on the running line, holds a persistent memory of the operation, and answers in plain English, cited to the source.
+
+### The Nodeblue open-source connectors
+
+| Connector | What it does |
+|---|---|
+| **studio5000-mcp-server** (this repo) | Rockwell/Allen-Bradley Studio 5000 — parse L5X exports: tags, UDTs, routines, AOIs, cross-references |
+| [ignition-mcp-server](https://github.com/Nodeblue-AI/ignition-mcp-server) | Ignition SCADA — views, scripts, tags, UDTs, alarms, live gateway read/write |
+| [bridge-mcp-server](https://github.com/Nodeblue-AI/bridge-mcp-server) | Correlates Ignition SCADA tags with Studio 5000 PLC logic end-to-end |
+
 ---
 
 ## What This Does
@@ -38,7 +51,7 @@ Studio 5000 has ~500,000+ active licenses and **zero AI tooling**. Rockwell's AI
 
 This server fills that gap. It's open-source, agent-agnostic, and works offline.
 
-Part of [Project Automate](https://github.com/md-automation/project-automate) by [Nodeblue](https://www.nodeblue.ai).
+Built and maintained by [Nodeblue](https://www.nodeblue.ai). These connectors are early community tooling from our work on [Nexus](https://www.nodeblue.ai/nexus), where this capability ships production-grade — alongside cross-vendor correlation, live fault diagnosis, and a persistent memory of the operation.
 
 ---
 
@@ -302,7 +315,7 @@ src/studio5000_mcp_server/
     └── xref.py          # Cross-reference index (tag→usage)
 
 tests/
-├── test_server.py       # 82 tests — parsers, tools, error handling
+├── test_server.py       # 85 tests — parsers, tools, error handling
 └── fixtures/
     └── sample.l5x       # Synthetic L5X with all resource types
 ```
@@ -316,5 +329,5 @@ MIT — see [LICENSE](LICENSE).
 ---
 
 <p align="center">
-  <i>Built by <a href="https://www.nodeblue.ai">Nodeblue</a> — Engineering-driven technology across software, industrial automation, and applied research.</i>
+  <i>Built by <a href="https://www.nodeblue.ai">Nodeblue</a>. Early community tooling behind <a href="https://www.nodeblue.ai/nexus">Nexus</a> — the industrial intelligence system that reads your operation and answers, cited to the source.</i>
 </p>
