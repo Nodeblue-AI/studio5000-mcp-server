@@ -2,6 +2,7 @@
 
 > MCP server for Rockwell/Allen-Bradley Studio 5000 — parse L5X project exports and give AI agents structured access to PLC tags, UDTs, routines, and programs.
 
+[![PyPI](https://img.shields.io/pypi/v/studio5000-mcp-server.svg)](https://pypi.org/project/studio5000-mcp-server/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/protocol-MCP-green.svg)](https://modelcontextprotocol.io/)
